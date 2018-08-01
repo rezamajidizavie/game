@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>My game</title>
+    <style>
+        * { padding: 0; margin: 0; }
+        #myCanvas { background: #eee; display: block; margin: 0 auto; border: solid ;z-index:1}
+        #canvas2 { background: brown; display: block; margin: 0 auto;border: solid;border-top: hidden;visibility: hidden }
+        #canvas3 { background: #eee; display: block; margin: 0 auto; border: solid;border-top: hidden;
+            visibility: hidden;}
+        #startgame{
+            width: 100px; height: 40px ;z-index:2; position:absolute;top: 263px; left: 715px;
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #opening{
+            z-index:2; position:absolute;top: 200px; left: 670px;
+            border: none;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            cursor: pointer;
+            font-family: cursive;
+        }
+    </style>
+</head>
+<body>
+<p id="opening">press play to start game<br>use arrowkeys to navigate</p>
+<button id="startgame" onclick="starter()">Play</button>
+<canvas id="myCanvas" width="480" height="480"></canvas>
+<canvas id="canvas2" width="480" height="40"></canvas>
+<canvas id="canvas3" width="480" height="200"></canvas>
+<script>
+    let canvas = document.getElementById("myCanvas");
+    let canvas2= document.getElementById("canvas2");
+    let canvas3= document.getElementById("canvas3");
+    let ctx = canvas.getContext("2d");
+    let ctx2 = canvas2.getContext("2d");
+    let ctx3 = canvas3.getContext("2d");
+    let ballRadius = 10;
+    let paddleHeight = 50;
+    let paddleWidth = 50;
+    let paddleX = 0;
+    let paddleY = 0;
+    let rightPressed = false;
+    let leftPressed = false;
+    let downPressed = false;
+    let upPressed = false;
+    let x;
+    let y;
+    let score=0;
+    let t=30;
+    let myinterval1;
+    let myinterval2;
+    function starter() {
+        document.getElementById("startgame").style.visibility="hidden";
+        document.getElementById("opening").style.visibility="hidden";
+        document.getElementById("canvas2").style.visibility="visible";
+        myinterval2=setInterval(draw, 5);
+        myinterval1 = setInterval(timer, 1000);
+        function timer() {
+            t -= 1;
+            if (t == -1) {
+                message();
+                sort();
+                renew();
+                leaderboard();
+            }
+        }
+    }
+    function ballcoordinates()
+    {
+        x = Math.floor(Math.random()*460+10);
+        y = Math.floor(Math.random()*460+10);
+    }
+    ballcoordinates();
+    function drawBall() {
+        ctx.beginPath();
+        ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+    }
+    function drawPaddle() {
+        ctx.beginPath();
+        ctx.rect(paddleX, paddleY, paddleWidth, paddleHeight);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+    }
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx2.clearRect(0, 0, canvas.width, canvas.height);
+        drawPaddle();
+        drawScore();
+        drawBall();
+        if(rightPressed) {
+            paddleX += 2;
+            if(paddleX + paddleWidth/2 > canvas.width)
+            {
+                paddleX=-paddleWidth/2;
+            }
+        }
+        if(leftPressed) {
+            paddleX -= 2;
+            if(paddleX < -paddleWidth/2)
+            {
+                paddleX =canvas.width-paddleWidth/2;
+            }
+        }
+        if(downPressed )
+        {
+            paddleY +=2;
+            if(paddleY + paddleHeight/2 > canvas.height)
+            {
+                paddleY=-paddleHeight/2;
+            }
+        }
+        if(upPressed )
+        {
+            paddleY -=2;
+            if(paddleY < -paddleHeight/2)
+            {
+                paddleY =canvas.height-paddleHeight/2;
+            }
+        }
+
+        if(x > paddleX-ballRadius && x < paddleX + paddleWidth + ballRadius && y > paddleY-ballRadius && y<paddleY+paddleHeight)
+        {
+            ballcoordinates();
+            drawBall();
+            score++;
+        }
+    }
+
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+
+    function keyDownHandler(e) {
+        if(e.keyCode == 39) {
+            rightPressed = true;
+        }
+        if(e.keyCode == 37) {
+            leftPressed = true;
+        }
+        if(e.keyCode == 40) {
+            downPressed = true;
+        }
+        if(e.keyCode == 38) {
+            upPressed = true;
+        }
+    }
+
+    function keyUpHandler(e) {
+        if(e.keyCode == 39) {
+            rightPressed = false;
+        }
+        if(e.keyCode == 37) {
+            leftPressed = false;
+        }
+        if(e.keyCode == 40) {
+            downPressed = false;
+        }
+        if(e.keyCode == 38) {
+            upPressed = false;
+        }
+    }
+
+    let myarray=[];
+    let newobject;
+    let name;
+    function message()
+    {
+        name = prompt("Please enter your name\nand then press ok to play again");
+        newobject =
+            {
+                name:name,
+                score:score
+            };
+        myarray.push(newobject);
+    }
+    let temp;
+    let temp2;
+    let i;
+    let j;
+    function sort()
+    {
+        for (i=0;i<myarray.length;i++){
+            for (j=i+1;j<myarray.length;j++)
+            {
+                if(myarray[i].score<myarray[j].score)
+                {
+                    temp = myarray[i].score;
+                    myarray[i].score=myarray[j].score;
+                    myarray[j].score=temp;
+                    temp2 = myarray[i].name;
+                    myarray[i].name=myarray[j].name;
+                    myarray[j].name=temp2;
+
+                }
+            }
+        }
+    }
+    function renew() {
+        paddleY=0;
+        paddleX=0;
+        score=0;
+        t=30;
+        rightPressed = false;
+        leftPressed = false;
+        downPressed = false;
+        upPressed = false;
+    }
+    function drawScore() {
+        ctx2.font = "16px Arial";
+        ctx2.fillStyle = "white";
+        ctx2.fillText("Score: "+score, 8, 25);
+        ctx2.fillText("Time: "+t, 412, 25);
+    }
+    let m=0;
+    function leaderboard(){
+        document.getElementById("canvas3").style.visibility="visible";
+        ctx3.clearRect(0, 0, canvas3.width, canvas3.height);
+        for (m=0;m<myarray.length;m++)
+        {
+            ctx3.font = "16px Arial";
+            ctx3.fillStyle = "red";
+            ctx3.fillText("Leaderboard", 190, 20);
+            ctx3.fillText(m+1+" - "+myarray[m].name +" : "+myarray[m].score, 8, 45+(m*20));
+        }
+        clearInterval(myinterval1);
+        clearInterval(myinterval2);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        document.getElementById("startgame").style.visibility="visible";
+    }
+</script>
+</body>
+</html>
